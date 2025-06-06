@@ -1,24 +1,30 @@
 import streamlit as st
 import spacy
+import nltk
 import pdfplumber
 from docx import Document
 import re
 from spacy.matcher import PhraseMatcher
 from spacy.cli import download
 
-# Load or download the spaCy model
+# Download spaCy model if not found
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
     download("en_core_web_sm")
     nlp = spacy.load("en_core_web_sm")
 
-# Precompiled patterns
+# Download NLTK models
+nltk.download("punkt")
+nltk.download("stopwords")
+nltk.download("wordnet")
+
+# Precompiled regex patterns
 EMAIL_PATTERN = re.compile(r'\b[\w\.-]+?@\w+?\.\w+?\b')
 PHONE_PATTERN = re.compile(r'(?:\+?\d{1,3})?[\s\-.\(]?\d{3,5}[\s\-.\)]?\d{3,5}[\s\-.\)]?\d{3,5}')
 MOBILE_HINT_PATTERN = re.compile(r'(Mobile|Phone)[\s:]*([\d\s\-\+\(\)]{10,})', re.IGNORECASE)
 
-# Sample keywords
+# Keywords
 SKILLS = [
     "Python", "Java", "C++", "Machine Learning", "Deep Learning", "Data Analysis",
     "SQL", "Power BI", "Data Science", "DL", "ML", "DL/ML"
@@ -26,7 +32,7 @@ SKILLS = [
 EDUCATION_KEYWORDS = ["Bachelor", "Master", "PhD", "Diploma", "University", "12TH", "10TH"]
 CERTIFICATIONS = ["Software Development", "MS Copilot For Productivity", "Data Analytics"]
 
-# Text extraction functions
+# File reading
 def extract_text_from_pdf(file):
     text = ""
     with pdfplumber.open(file) as pdf:
@@ -39,7 +45,7 @@ def extract_text_from_docx(file):
     doc = Document(file)
     return "\n".join([para.text for para in doc.paragraphs])
 
-# Extract name from top lines or NLP
+# Extract name from top lines
 def extract_name(text):
     lines = text.strip().split('\n')
     top_lines = lines[:5]
@@ -56,7 +62,7 @@ def extract_name(text):
             return ent.text.strip()
     return "Not found"
 
-# Full entity extraction
+# Entity extraction logic
 def extract_entities(text):
     doc = nlp(text)
 
@@ -104,7 +110,7 @@ def extract_entities(text):
 
     return entities
 
-# Streamlit UI
+# Streamlit App
 def main():
     st.set_page_config(page_title="Resume Entity Extractor", layout="wide")
     st.title("📄 Resume Entity Extractor")
