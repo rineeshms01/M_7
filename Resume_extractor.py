@@ -1,11 +1,20 @@
 import streamlit as st
-import nltk
+
 import spacy
 import pdfplumber
 from docx import Document
 import re
 from spacy.matcher import PhraseMatcher
-nltk.download('en_core_web_sm')
+import spacy
+from spacy.cli import download
+import os
+
+# Auto-download the model if it's not found
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
 
 # Load spaCy model
 nlp = spacy.load("en_core_web_sm")
