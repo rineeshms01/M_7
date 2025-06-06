@@ -3,9 +3,11 @@ import nltk
 import spacy
 import pdfplumber
 from docx import Document
+import spacy.cli
 import re
+spacy.cli.download("en_core_web_sm")
 from spacy.matcher import PhraseMatcher
-nltk.download('en_core_web_sm')
+# nltk.download('en_core_web_sm')
 
 # Load spaCy model
 nlp = spacy.load("en_core_web_sm")
