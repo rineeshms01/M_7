@@ -1,19 +1,14 @@
 import streamlit as st
+import nltk
 import spacy
-import subprocess
-import importlib.util
 import pdfplumber
 from docx import Document
 import re
 from spacy.matcher import PhraseMatcher
-
-# Auto-download spaCy model if not available
-model_name = "en_core_web_sm"
-if importlib.util.find_spec(model_name) is None:
-    subprocess.run(["python", "-m", "spacy", "download", model_name])
+nltk.download('en_core_web_sm')
 
 # Load spaCy model
-nlp = spacy.load(model_name)
+nlp = spacy.load("en_core_web_sm")
 
 # Precompiled patterns
 EMAIL_PATTERN = re.compile(r'\b[\w\.-]+?@\w+?\.\w+?\b')
@@ -21,9 +16,9 @@ PHONE_PATTERN = re.compile(r'(?:\+?\d{1,3})?[\s\-.\(]?\d{3,5}[\s\-.\)]?\d{3,5}[\
 MOBILE_HINT_PATTERN = re.compile(r'(Mobile|Phone)[\s:]*([\d\s\-\+\(\)]{10,})', re.IGNORECASE)
 
 # Sample keywords
-SKILLS = ["Python", "Java", "C++", "Machine Learning", "Deep Learning", "Data Analysis", "SQL", "Power BI", "Data Science", "DL", "ML", "DL/ML"]
-EDUCATION_KEYWORDS = ["Bachelor", "Master", "PhD", "Diploma", "University", "12TH", "10TH"]
-CERTIFICATIONS = ["Software Development", "MS Copilot For Productivity", "Data Analytics"]
+SKILLS = ["Python", "Java", "C++", "Machine Learning", "Deep Learning", "Data Analysis", "SQL", "Power BI","Data Science","DL","ML","DL/ML"]
+EDUCATION_KEYWORDS = ["Bachelor", "Master", "PhD", "Diploma", "University","12TH","10TH"]
+CERTIFICATIONS = ["Software Development","MS Copilot For Productivity","Data Analytics",]
 
 # Text extraction
 def extract_text_from_pdf(file):
@@ -38,7 +33,7 @@ def extract_text_from_docx(file):
     doc = Document(file)
     return "\n".join([para.text for para in doc.paragraphs])
 
-# Name extraction
+# Entity extraction
 def extract_name(text):
     lines = text.strip().split('\n')
     top_lines = lines[:5]
@@ -55,7 +50,6 @@ def extract_name(text):
             return ent.text.strip()
     return "Not found"
 
-# Entity extraction
 def extract_entities(text):
     doc = nlp(text)
 
@@ -106,9 +100,9 @@ def extract_entities(text):
 # Streamlit UI
 def main():
     st.set_page_config(page_title="Resume Entity Extractor", layout="wide")
-    st.title("Resume Entity Extractor")
+    st.title("📄 Resume Entity Extractor")
 
-    st.markdown("Upload your resume in PDF or DOCX format to extract:")
+    st.markdown("Upload your resume in **PDF** or **DOCX** format to extract:")
     st.markdown("- Name\n- Email\n- Mobile Number\n- Skills\n- Education\n- Certifications")
 
     uploaded_file = st.file_uploader("Upload Resume", type=["pdf", "docx"])
@@ -122,12 +116,13 @@ def main():
             st.error("Unsupported file type.")
             return
 
-        st.subheader("Extracted Resume Text")
-        st.text_area("Resume Content", text, height=250)
+        st.subheader("Resume Text")
+        st.text_area("Extracted Text", text, height=250)
 
-        if st.button("Extract Entities"):
+        if st.button("🔍 Extract Entities"):
             entities = extract_entities(text)
-            st.subheader("Extracted Information")
+            st.subheader("🧾 Extracted Information")
+
             for key, value in entities.items():
                 if isinstance(value, (list, set)):
                     value = ", ".join(value) if value else "Not found"
