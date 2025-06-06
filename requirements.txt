@@ -2,3 +2,12 @@ nltk
 spacy
 pdfplumber
 python-docx
+streamlit
+spacy
+pdfplumber
+docx2txt
+numpy
+pandas
+scikit-learn
+openpyxl
+
