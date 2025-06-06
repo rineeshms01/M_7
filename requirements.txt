@@ -1,4 +1,6 @@
-spacy>=3.7.2
-pdfplumber>=0.10.3
-python-docx>=0.8.11
+streamlit
+spacy
 nltk
+pdfplumber
+python-docx
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
