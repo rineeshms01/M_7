@@ -1,68 +1,56 @@
 import streamlit as st
 import spacy
-import nltk
+from spacy.util import is_package
+from spacy.cli import download
 import pdfplumber
 from docx import Document
 import re
 from spacy.matcher import PhraseMatcher
-from spacy.cli import download
 
-# Download spaCy model if not found
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+# ✅ Auto-download spaCy model if missing
+@st.cache_resource
+def get_nlp_model():
+    model_name = "en_core_web_sm"
+    if not is_package(model_name):
+        download(model_name)
+    return spacy.load(model_name)
 
-# Download NLTK models
-nltk.download("punkt")
-nltk.download("stopwords")
-nltk.download("wordnet")
+nlp = get_nlp_model()
 
-# Precompiled regex patterns
+# ✅ Patterns
 EMAIL_PATTERN = re.compile(r'\b[\w\.-]+?@\w+?\.\w+?\b')
 PHONE_PATTERN = re.compile(r'(?:\+?\d{1,3})?[\s\-.\(]?\d{3,5}[\s\-.\)]?\d{3,5}[\s\-.\)]?\d{3,5}')
 MOBILE_HINT_PATTERN = re.compile(r'(Mobile|Phone)[\s:]*([\d\s\-\+\(\)]{10,})', re.IGNORECASE)
 
-# Keywords
-SKILLS = [
-    "Python", "Java", "C++", "Machine Learning", "Deep Learning", "Data Analysis",
-    "SQL", "Power BI", "Data Science", "DL", "ML", "DL/ML"
-]
+SKILLS = ["Python", "Java", "C++", "Machine Learning", "Deep Learning", "Data Analysis", "SQL", "Power BI", "Data Science", "DL", "ML"]
 EDUCATION_KEYWORDS = ["Bachelor", "Master", "PhD", "Diploma", "University", "12TH", "10TH"]
 CERTIFICATIONS = ["Software Development", "MS Copilot For Productivity", "Data Analytics"]
 
-# File reading
+# ✅ File text extractors
 def extract_text_from_pdf(file):
-    text = ""
     with pdfplumber.open(file) as pdf:
-        for page in pdf.pages:
-            if page.extract_text():
-                text += page.extract_text() + "\n"
-    return text
+        return "\n".join(page.extract_text() for page in pdf.pages if page.extract_text())
 
 def extract_text_from_docx(file):
-    doc = Document(file)
-    return "\n".join([para.text for para in doc.paragraphs])
+    return "\n".join(para.text for para in Document(file).paragraphs)
 
-# Extract name from top lines
+# ✅ Name extractor
 def extract_name(text):
-    lines = text.strip().split('\n')
-    top_lines = lines[:5]
+    lines = text.strip().split('\n')[:5]
     common_headers = ['email', 'mobile', 'phone', 'contact', 'address', 'skills']
-    for line in top_lines:
+    for line in lines:
         clean_line = line.strip()
         if clean_line and not any(char.isdigit() for char in clean_line):
             if all(word not in clean_line.lower() for word in common_headers):
                 if 2 <= len(clean_line.split()) <= 5:
                     return clean_line
-    doc = nlp('\n'.join(top_lines))
+    doc = nlp('\n'.join(lines))
     for ent in doc.ents:
         if ent.label_ == "PERSON":
             return ent.text.strip()
     return "Not found"
 
-# Entity extraction logic
+# ✅ Entity extractor
 def extract_entities(text):
     doc = nlp(text)
 
@@ -106,11 +94,11 @@ def extract_entities(text):
             entities["Certifications"].add(span_text)
 
     for key in ["Skills", "Education", "Certifications"]:
-        entities[key] = sorted(entities[key])
+        entities[key] = sorted(entities[key]) if entities[key] else ["Not found"]
 
     return entities
 
-# Streamlit App
+# ✅ Streamlit UI
 def main():
     st.set_page_config(page_title="Resume Entity Extractor", layout="wide")
     st.title("📄 Resume Entity Extractor")
@@ -129,16 +117,15 @@ def main():
             st.error("Unsupported file type.")
             return
 
-        st.subheader("Resume Text")
+        st.subheader("📄 Resume Text")
         st.text_area("Extracted Text", text, height=250)
 
         if st.button("🔍 Extract Entities"):
             entities = extract_entities(text)
             st.subheader("🧾 Extracted Information")
-
             for key, value in entities.items():
-                if isinstance(value, (list, set)):
-                    value = ", ".join(value) if value else "Not found"
+                if isinstance(value, list):
+                    value = ", ".join(value)
                 elif not value:
                     value = "Not found"
                 st.markdown(f"**{key}:** {value}")
