@@ -1,6 +1,4 @@
 nltk
 spacy
-pdf
 pdfplumber
-docx
-re
+python-docx
