@@ -48,7 +48,7 @@ def extract_name(text):
     lines = text.strip().split('\n')
     top_lines = lines[:5]
     common_headers = ['email', 'mobile', 'phone', 'contact', 'address', 'skills']
-    non_name_phrases = ['curriculum vitae', 'resume', 'cv', 'profile']
+    non_name_phrases = ['curriculum vitae', 'resume', 'cv', 'profile','Career Objective']
 
     for line in top_lines:
         clean_line = line.strip()
