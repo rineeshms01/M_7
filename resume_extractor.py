@@ -21,7 +21,7 @@ SKILLS = ["Python", "Java", "C++", "Machine Learning", "Deep Learning", "Data An
 EDUCATION_KEYWORDS = ["Bachelor", "Master", "PhD", "Diploma", "University", "12TH", "10TH"]
 CERTIFICATIONS = ["Software Development", "MS Copilot For Productivity", "Data Analytics"]
 
-# -------------------- TEXT EXTRACTION --------------------
+# TEXT EXTRACTION
 
 def extract_text_from_pdf(file):
     text = ""
@@ -35,7 +35,7 @@ def extract_text_from_docx(file):
     doc = Document(file)
     return "\n".join([para.text for para in doc.paragraphs])
 
-# -------------------- NAME HELPERS --------------------
+# NAME HELPERS
 
 def extract_name_from_email(email):
     username = email.split("@")[0]
@@ -72,7 +72,7 @@ def extract_name(text):
 
     return "Not found"
 
-# -------------------- ENTITY EXTRACTION --------------------
+# EXTRACTION
 
 def extract_entities(text):
     doc = nlp(text)
@@ -120,11 +120,11 @@ def extract_entities(text):
 
     return entities
 
-# -------------------- STREAMLIT UI --------------------
+# STREAMLIT UI
 
 def main():
     st.set_page_config(page_title="Resume Entity Extractor", layout="wide")
-    st.title("📄 Resume Entity Extractor")
+    st.title("Resume Extractor")
 
     st.markdown("Upload your resume in **PDF** or **DOCX** format to extract:")
     st.markdown("- Name\n- Email\n- Mobile Number\n- Skills\n- Education\n- Certifications")
@@ -145,7 +145,7 @@ def main():
 
         if st.button("🔍 Extract Entities"):
             entities = extract_entities(text)
-            st.subheader("🧾 Extracted Information")
+            st.subheader("Extracted Information")
 
             for key, value in entities.items():
                 if isinstance(value, (list, set)):
